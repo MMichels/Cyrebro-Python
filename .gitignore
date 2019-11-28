@@ -1,0 +1,6 @@
+*.pyd
+*.cpp
+Untitled.*
+
+build/*
+.vs/*
