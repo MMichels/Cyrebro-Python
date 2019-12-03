@@ -4,3 +4,4 @@ Untitled.*
 
 build/*
 .vs/*
+__pycache__/*
