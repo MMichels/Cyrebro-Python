@@ -18,6 +18,7 @@ if USE_CYTHON:
 
             sources= [
                 '.\\*.pyx',
+                dirProjeto + "src\\Util.cpp",            
                 dirProjeto + "src\\Ativacoes.cpp",            
                 dirProjeto + "src\\Neuronios.cpp",           
                 dirProjeto + "src\\Camadas.cpp",           

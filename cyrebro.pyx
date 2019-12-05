@@ -39,6 +39,7 @@ cdef class PyPerceptron:
         assert pesos.size() == self.c_neuro.qtdLigacoes, "O tamanho do vetor de pesos deve ser igual a \
         quantidade de ligacoes do neuronio, o neuronio possui " + str(self.qtdLigacoes) + " ligacoes"
         self.c_neuro.pesos = pesos
+        vector[int]().swap(pesos)
 
 # Camadas
 cdef class PyCamada:
@@ -52,14 +53,17 @@ cdef class PyCamada:
     
     def conectarProxCamada(self, PyCamada proxCamada):
         self.c_camada.conectarProxCamada(&proxCamada.c_camada)
+        
 
     def calculaSaida(self, PyCamada camadaAnterior):
         self.c_camada.calculaSaida(&camadaAnterior.c_camada)
+        
 
     def aplicarEntrada(self, vector[int] valores):
         assert len(valores) == self.qtdNeuronios, "A quantidade de valores e a quantidade de neuronios devem ser iguais, \
         existem " + str(self.qtdNeuronios) + " neuronios nesta camada"      
         self.c_camada.aplicarEntrada(valores)
+        vector[int]().swap(valores)
 
 
     @property
@@ -72,6 +76,7 @@ cdef class PyCamada:
     def saida(self, vector[int] valores):
         # Alterar os valores da saida é o mesmo que aplicar um valor de entrada nesta camada
         self.aplicarEntrada(valores)
+        vector[int]().swap(valores)
 
     @property
     def qtdNeuronios(self):
@@ -91,7 +96,7 @@ cdef class PyCamada:
     
     @neuronios.setter
     def neuronios(self, pNeuronios: List[PyPerceptron]):
-        assert len(pNeuronios) == self.qtdNeuronios, "Esta camada tem " + str(self.qtdNeuronios) + " neuronios"
+        #assert len(pNeuronios) == self.qtdNeuronios, "Esta camada tem " + str(self.qtdNeuronios) + " neuronios"
         pesos = [pN.pesos for pN in pNeuronios]
         saidas = [pN.saida for pN in pNeuronios]
         qtdLigacoes = [pN.qtdLigacoes for pN in pNeuronios]
@@ -100,7 +105,7 @@ cdef class PyCamada:
             self.c_camada.perceptrons[i].qtdLigacoes = qtdLigacoes[i]
             self.c_camada.perceptrons[i].pesos = pesos[i]
             self.c_camada.perceptrons[i].saida = saidas[i]
-
+        
 # REDES
 
 cdef class PyDensa:
@@ -108,9 +113,6 @@ cdef class PyDensa:
 
     def __cinit__(self, int qtdNeuroniosEntrada, int qtdCamadas, int profundidadeCamadas, int qtdNeuroniosSaida):
         self.c_densa = Densa(qtdNeuroniosEntrada, qtdCamadas, profundidadeCamadas, qtdNeuroniosSaida)
-
-    #def __dealloc__(self):
-    #    del self.c_densa
 
     def aplicarEntrada(self, vector[int] valores):
         assert valores.size() == self.qtdNeuroniosEntrada, "Quantidade de valores de entrada e quantidade de neuronios não conferem"
@@ -122,6 +124,27 @@ cdef class PyDensa:
     def obterSaida(self):
         saida = self.c_densa.obterSaida()
         return saida
+
+    def mudarValor(self, int valor):
+        return self.c_densa.mudarValor(valor)
+
+    def copiarDNA(self):
+        dna = self.c_densa.copiarDNA()
+        return dna
+
+    def colarDNA(self, vector[int] dna):
+        self.c_densa.colarDNA(dna)
+
+    def alterarDNA(self, vector[int] dna):
+        dna = self.c_densa.alterarDNA(dna)
+        return dna
+
+    def sofrerMutacao(self):
+        self.c_densa.sofrerMutacao()
+
+    def copiarRede(self, PyDensa inspiracao):
+        c_inpiracao = inspiracao.c_densa
+        self.c_densa.copiarRede(&c_inpiracao)
 
     @property
     def qtdNeuroniosEntrada(self):
@@ -159,6 +182,7 @@ cdef class PyDensa:
     @camadaEntrada.setter
     def camadaEntrada(self, PyCamada novaCamada):
         self.c_densa.camadaEntrada = novaCamada.c_camada
+        
 
     @property
     def camadaSaida(self):
@@ -168,6 +192,7 @@ cdef class PyDensa:
     @camadaSaida.setter
     def camadaSaida(self, PyCamada novaCamada):
         self.c_densa.camadaSaida = novaCamada.c_camada
+        
     
     @property
     def camadasEscondidas(self):
@@ -182,5 +207,21 @@ cdef class PyDensa:
     def camadasEscondidas(self, novasCamadas: List[PyCamada]):
         for c in range(self.qtdCamadas):
             camada = PyCamada(novasCamadas[c].qtdNeuronios)
-            camada.neuronios = novasCamadas[c].perceptrons
+            camada.neuronios = novasCamadas[c].neuronios
             self.c_densa.camadasEscondidas[c] = camada.c_camada
+        
+    @property
+    def tamanhoDNA(self):
+        return self.c_densa.tamanhoDNA
+
+    @property
+    def qtdGenesCamadaSaida(self):
+        return self.c_densa.qtdGenesCamadaSaida
+    
+    @property
+    def qtdGenesCamadasEscondidas(self):
+        return self.c_densa.qtdGenesCamadasEscondidas
+
+    @property
+    def qtdMutacoes(self):
+        return self.c_densa.qtdMutacoes
