@@ -115,7 +115,7 @@ cdef class PyDensa:
         self.c_densa = Densa(qtdNeuroniosEntrada, qtdCamadas, profundidadeCamadas, qtdNeuroniosSaida)
 
     def aplicarEntrada(self, vector[int] valores):
-        assert valores.size() == self.qtdNeuroniosEntrada, "Quantidade de valores de entrada e quantidade de neuronios não conferem"
+        #assert valores.size() == self.qtdNeuroniosEntrada, "Quantidade de valores de entrada e quantidade de neuronios não conferem"
         self.c_densa.aplicarEntrada(valores)
 
     def calculaSaida(self):
